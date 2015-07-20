@@ -8,13 +8,26 @@ from threading import Thread
 requests.packages.urllib3.disable_warnings()
 TOKEN = os.getenv("GITHUB_TOKEN")
  
-repos = ["tutumcloud/tutum-app","tutumcloud/events", "tutumcloud/weave-daemon",
-         "tutumcloud/metrics","tutumcloud/builder", "tutumcloud/tutum-live",
-         "tutumcloud/docker-registry","tutumcloud/support-docs","tutumcloud/tutum-ui",
-         ]
+repos = ["tutumcloud/api-docs","tutumcloud/builder","tutumcloud/cleanup",
+        "tutumcloud/cli","tutumcloud/docker-registry","tutumcloud/docker-update",
+        "tutumcloud/events","tutumcloud/go-tutum","tutumcloud/metrics",
+        "tutumcloud/ntpd","tutumcloud/python-tutum","tutumcloud/stackfiles",
+        "tutumcloud/support-docs","tutumcloud/tutum-agent","tutumcloud/tutum-app",
+        "tutumcloud/tutum-ui","tutumcloud/tutum-live","tutumcloud/weave-daemon"]
 
-jumpstarts = ["tutumcloud/newrelic-agent","tutumcloud/haproxy", "tutumcloud/redis", "tutumcloud/mongodb",
-			"tutumcloud/hello-world"]
+jumpstarts = ["tutumcloud/apache-php","tutumcloud/authorizedkeys","tutumcloud/btsync",
+              "tutumcloud/couchdb","tutumcloud/curl","tutumcloud/datadog-agent",
+              "tutumcloud/dockup","tutumcloud/elasticsearch","tutumcloud/glassfish",
+              "tutumcloud/grafana","tutumcloud/haproxy","tutumcloud/hello-world",
+              "tutumcloud/homebrew","tutumcloud/influxdb","tutumcloud/jboss",
+              "tutumcloud/labelizer","tutumcloud/lamp","tutumcloud/mariadb",
+              "tutumcloud/memcached","tutumcloud/mongodb","tutumcloud/mysql",
+              "tutumcloud/nginx","tutumcloud/ngrok-server","tutumcloud/postgresql",
+              "tutumcloud/python-social-auth","tutumcloud/rabbitmq","tutumcloud/redis",
+              "tutumcloud/riak","tutumcloud/slate","tutumcloud/syslogger","tutumcloud/tomcat",
+              "tutumcloud/tutum-centos","tutumcloud/tutum-debian","tutumcloud/tutum-fedora",
+              "tutumcloud/tutum-ubuntu","tutumcloud/unixbench","tutumcloud/varnish",
+              "tutumcloud/wordpress","tutumcloud/wordpress-stackable"]
  
 def make_request(path, method="GET"):
     url = "https://api.github.com%s" % path if not path.startswith("http") else path
@@ -23,7 +36,7 @@ def make_request(path, method="GET"):
     json=r.json()
     if r.status_code != requests.codes.ok:
         if "releases/latest" in path: #no release on repo
-            json["name"]= "Not found"
+            json["name"]= "-"
         else:
             r.raise_for_status()
     return json
@@ -69,7 +82,7 @@ def notes(repo):
         store["/repos/%s/tags" % repo][0]["commit"]["sha"]!=store["/repos/%s/git/refs/heads/master" % repo]["object"]["sha"]:
         notes+="Release missing, "
     if store["/repos/%s/compare/master...staging" % repo]["behind_by"]>0:
-        notes+="Staying needs rebasing, "
+        notes+="Staging needs rebasing, "
     if store["/repos/%s/compare/master...staging" % repo]["ahead_by"]>0:
         notes+="Pending release, "
     return notes[:-2]
