@@ -94,7 +94,7 @@ if __name__ == '__main__':
     for repo in repos:
 
         table.append([repo,
-                     threads[i].value["name"],
+                     threads[i+1].value["name"],
                      str(threads[i+3].value["behind_by"])+"/"+ str(threads[i+3].value["ahead_by"]),
                      threads[i].value["open_issues_count"],
                      len(threads[i+2].value),
