@@ -11,11 +11,20 @@ What you only need to do is create an environment variable called GITHUB_TOKEN, 
 
 replacing `<mytoken>` with your Github token.
 
+
+## Docker usage
+
+    docker run -e GITHUB_TOKEN=*my-token* -t gonzalopericacho/github_status
+
+replacing `*my-token*` with your Github token.
+
+
 ## Dependencies
 
 * Python
 * gevent library
 * tabulate library
+* requests library
 
 ## Notes
 
