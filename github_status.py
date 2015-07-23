@@ -47,20 +47,39 @@ def make_request(path, method="GET"):
             raise
     return json
 
+def initial_request(path, method="GET"):
+    url = "https://api.github.com%s" % path if not path.startswith("http") else path
+    r = requests.request(method, url, headers={"Accept": "application/vnd.github.v3+json",
+                                               "Authorization": "token %s" % TOKEN})
+    json=r.json()
+    r.raise_for_status()
+    try:
+    	pages=r.headers["link"].split(",")[1].split(";")[0][:-1].split("=")[-1]
+    except:
+    	pages=1
+    return json,pages
+
 if __name__ == '__main__':
 
     table = []
     queries=[]
     major_repos=[]
     minor_repos=[]
-    
-    for repo in make_request("/user/repos?per_page=100"):
-        if repo["owner"]["type"]!= "User" and not "DEPRECATED" in repo["description"]:
-            if (repo["default_branch"]=="staging"):
-                major_repos.append(repo["full_name"].encode("ascii","ignore"))
-            else:
-                minor_repos.append(repo["full_name"].encode("ascii","ignore"))
+    repos,pages=initial_request("/user/repos")
+    for page in range(1,int(pages)+1):
+    	queries.append("/user/repos?per_page=30&page=%s" %page)
 
+   	threads = [gevent.spawn( make_request, query) for query in queries]
+    gevent.joinall(threads, raise_error=False)
+
+    for repos in threads:
+    	for repo in repos.value:
+	        if repo["owner"]["type"]!= "User" and not "DEPRECATED" in repo["description"]:
+	            if (repo["default_branch"]=="staging"):
+	                major_repos.append(repo["full_name"].encode("ascii","ignore"))
+	            else:
+	                minor_repos.append(repo["full_name"].encode("ascii","ignore"))
+    queries=[]
     for repo in major_repos:
         queries.extend(["/repos/%s" % repo,
                         "/repos/%s/releases/latest" % repo,
